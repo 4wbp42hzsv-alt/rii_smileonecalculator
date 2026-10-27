@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmileOne MLBB Calculator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:15px;background:#edf3fc;color:#17233b;font-family:Arial,sans-serif}
+main{max-width:1000px;margin:auto}.card{background:white;padding:15px;border:1px solid #d9e4f2;border-radius:15px;margin-bottom:13px}
+h1{font-size:25px;margin:5px 0}p{color:#687993;font-size:13px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:13px;color:#687993;margin-bottom:5px}
+input,select{width:100%;padding:12px;border:1px solid #d9e4f2;border-radius:10px;font-size:16px;background:white;color:#17233b}
+button{padding:12px;border:0;border-radius:10px;background:#2867c8;color:white;font-weight:bold;font-size:14px}
+.tools{display:flex;gap:8px;margin-bottom:12px}.tools button{flex:1}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.stat{background:#f1f6fd;padding:12px;border-radius:10px}.stat small{display:block;color:#687993}.stat b{display:block;margin-top:5px;font-size:19px}
+.tablebox{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:570px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #e3eaf4;font-size:13px;white-space:nowrap}th{background:#e9f1fc;color:#52647f}td.r,th.r{text-align:right}.price{font-weight:bold;color:#087f58}
+@media(max-width:500px){body{padding:9px}.card{padding:11px}h1{font-size:22px}.tools button{padding:10px 5px;font-size:12px}}
+</style>
+</head>
+<body><main>
+<div class="card">
+<h1>💎 SmileOne MLBB Calculator</h1>
+<p>Coin Rate ပြောင်းထည့်ပြီး အရင်း၊ အမြတ်နဲ့ ရောင်းစျေးကို အလိုအလျောက်တွက်ပါ။</p>
+<div class="grid">
+<div><label>Coin အရေအတွက်</label><input id="qty" type="number" value="1000"></div>
+<div><label>စုစုပေါင်းပေးငွေ (Ks)</label><input id="paid" type="number" value="84400"></div>
+<div><label>အမြတ် (%)</label><input id="profit" type="number" value="0" step="0.1"></div>
+<div><label>ရောင်းစျေးအဝိုင်းချ</label><select id="round"><option value="1">အတိအကျ</option><option value="10">10 Ks</option><option value="100" selected>100 Ks</option><option value="500">500 Ks</option><option value="1000">1000 Ks</option></select></div>
+</div>
+<div class="stats">
+<div class="stat"><small>1 Coin အရင်းစျေး</small><b id="rate">84.4 Ks</b></div>
+<div class="stat"><small>Package အရေအတွက်</small><b>54</b></div>
+</div>
+</div>
+<div class="card">
+<div class="tools"><button id="copy">စျေးစာရင်း Copy</button><button id="costcopy">အရင်းစာရင်း Copy</button></div>
+<label>Dia Plan ရှာရန်</label><input id="search" placeholder="ဥပမာ 706, twilight, wp">
+<div class="tablebox"><table><thead><tr><th>No.</th><th>Dia Plan</th><th class="r">Coin 🪙</th><th class="r">အရင်း Ks</th><th class="r">အမြတ် Ks</th><th class="r">ရောင်းစျေး Ks</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p>အစဉ်လိုက်: Numeric Plan ငယ်စဉ်ကြီးလိုက်၊ ထို့နောက် web/meb/twilight/wp/cp/vp၊ နောက်ဆုံးတွင် 55/165/275/565 အုပ်စု။</p>
+</div></main>
+<script>
+const data=[
+["86",61.5],["172",122],["257",177.5],["343",239],["344",244],["429",299.5],["430",305.5],["514",355],["600",416.5],["706",480],["792",541.5],["878",602],["963",657.5],["1049",719],["1050",724],["1135",779.5],["1220",835],["1222",846],["1412",960],["1584",1082],["1669",1137.5],["1755",1199],["1841",1259.5],["2195",1453],["2281",1514.5],["2452",1630.5],["2538",1692],["2901",1933],["3073",2055],["3158",2110.5],["3688",2424],["3945",2601.5],["4031",2663],["4394",2904],["4566",3026],["5100",3384],["5532",3660],["5704",3782],["6055",3999],["6238",4140],["6752",4495],["7030",4681.5],["7376",4848],["9288",6079],
+["web",39],["meb",196.5],["twilight",402.5],["wp",76],["cp",219.4],["vp",39],
+["55",39],["165",116.9],["275",187.5],["565",385]
+];
+const $=id=>document.getElementById(id);
+const n=id=>Math.max(0,Number($(id).value)||0);
+const rate=()=>n("qty")?n("paid")/n("qty"):0;
+const fmt=x=>Math.round(x).toLocaleString("en-US");
+function calc(x){let c=x[1]*rate(),p=c*n("profit")/100,s=Math.max(1,n("round"));return [c,p,Math.ceil((c+p-1e-8)/s)*s]}
+function render(){let q=$("search").value.toLowerCase().trim();$("rows").innerHTML="";data.forEach((x,i)=>{if(q&&!x[0].toLowerCase().includes(q)&&!String(x[1]).includes(q))return;let c=calc(x),tr=document.createElement("tr");[i+1,x[0],x[1].toLocaleString("en-US"),fmt(c[0]),fmt(c[1]),fmt(c[2])].forEach((v,j)=>{let td=document.createElement("td");td.textContent=v;if(j>=2)td.classList.add("r");if(j===5)td.classList.add("price");tr.appendChild(td)});$("rows").appendChild(tr)});$("rate").textContent=rate().toLocaleString("en-US",{maximumFractionDigits:4})+" Ks"}
+["qty","paid","profit","round","search"].forEach(id=>$(id).addEventListener("input",render));
+function copyText(t){let a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();alert("Copy လုပ်ပြီးပါပြီ")}
+$("copy").onclick=()=>copyText(["MLBB DIAMOND PRICE LIST","1 Coin = "+rate()+" Ks","Profit = "+n("profit")+"%",...data.map(x=>x[0]+" — "+fmt(calc(x)[2])+" Ks")].join("\n"));
+$("costcopy").onclick=()=>copyText(["MLBB COST LIST","1 Coin = "+rate()+" Ks",...data.map(x=>x[0]+" — "+fmt(calc(x)[0])+" Ks")].join("\n"));
+render();
+</script>
+</body>
+</html>
